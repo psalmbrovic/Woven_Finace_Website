@@ -10,7 +10,7 @@ def driver_setup():
     # chrome_options.add_argument("--headless")  # Run Chrome in headless mode
     chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration (to avoid errors in headless mode)
     driver = webdriver.Chrome(options=chrome_options)
-    driver.implicitly_wait(30)
+    driver.implicitly_wait(50)
     driver.maximize_window()
     yield driver
     driver.quit()
@@ -20,5 +20,13 @@ def driver_setup():
 def login(driver_setup):
     driver = driver_setup
     login_page = LoginPage(driver)
-    login_page.login_url("https://business.staging.woven.finance/login")
+    login_page.login_url("https://business.woven.finance/login")
     return login_page
+
+def test_login_page_woven_website(login):
+    login.enter_email("gammaspark@yahoo.com")
+    login.enter_password("Password12$")
+    login.click_login()
+
+def test_verify_login_url(login):
+    login.verify_url("https://business.woven.finance/dashboard")

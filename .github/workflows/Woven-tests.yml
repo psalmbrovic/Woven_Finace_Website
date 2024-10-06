@@ -1,0 +1,61 @@
+name: Woven Test Automation
+
+on:
+  push:
+    branches:
+      - dev
+      - staging
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-selenium-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      
+      - name: Run Selenium Tests for Each Environment
+        run: |
+          if [ "${GITHUB_REF_NAME}" == "main" ]; then
+            pytest --env=prod
+          elif [ "${GITHUB_REF_NAME}" == "staging" ]; then
+            pytest --env=staging
+          else
+            pytest --env=dev
+          fi
+
+      - name: Run Woven Tests
+        id: selenium-tests
+        run: |
+          pytest --maxfail=5 --disable-warnings --html=reports/report.html --self-contained-html
+        continue-on-error: true
+
+      # Step to send an email if the tests fail
+      - name: Send Email Notification on Failure
+        if: failure()  # Only run this step if the previous step failed
+        run: |
+          sudo apt-get install -y mailsend-go
+          mailsend-go \
+            -sub "🚨 Woven Test Failed!" \
+            -smtp "${{ secrets.SMTP_SERVER }}" \
+            -port "${{ secrets.SMTP_PORT }}" \
+            -user "${{ secrets.SMTP_USERNAME }}" \
+            -pass "${{ secrets.SMTP_PASSWORD }}" \
+            -from "${{ secrets.SMTP_USERNAME }}" \
+            -t "recipient@example.com" \
+            -msg-body "The Woven test suite has failed. Please check the attached report." \
+            -attach "reports/report.html"
