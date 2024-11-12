@@ -28,7 +28,7 @@ jobs:
           pip install -r requirements.txt
 
       
-      - name: Run Selenium Tests for Each Environment
+      - name: Run Woven Tests for Each Environment
         run: |
           if [ "${GITHUB_REF_NAME}" == "main" ]; then
             pytest --env=prod
