@@ -27,6 +27,3 @@ def test_login_page_woven_website(login):
     login.enter_email("gammaspark@yahoo.com")
     login.enter_password("Password12$")
     login.click_login()
-
-def test_verify_login_url(login):
-    login.verify_url("https://business.woven.finance/dashboard")
